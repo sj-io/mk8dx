@@ -2,6 +2,7 @@
 #' @import dplyr
 #' @import tidyr
 #' @import stringr
+#' @import xml2
 
 mk_lss <- function(folder) {
   s <- folder
