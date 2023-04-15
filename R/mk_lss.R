@@ -38,27 +38,25 @@ mk_lss <- function(folder) {
     unnest(Metadata) |>
     pivot_wider(names_from = "md", values_from = "Metadata", values_fill = NA_character_) |>
     unnest(AttemptHistory) |>
-    group_by(fileID) |>
-    mutate(runID = row_number(), .after = "fileID") |>
+    mutate(runID = row_number(), .by = "fileID", .after = "fileID") |>
     unnest_wider(AttemptHistory) |>
     unnest_longer(Segments, keep_empty = TRUE) |>
-    group_by(fileID, runID) |>
-    mutate(trackID = row_number(), .after = "runID") |>
-    ungroup() |>
+    mutate(trackID = row_number(), .by = c("fileID", "runID"), .after = "runID") |>
     unnest_wider(Segments) |>
     unnest(c(SplitTimes, SegmentHistory)) |>
     unnest(cols = c(SplitTimes, BestSegmentTime, SegmentHistory)) |>
     unnest(everything()) |>
     unnest(everything()) |>
-    group_by(fileID, runID, trackID) |>
-    mutate(segmentID = row_number(), .after = "trackID") |>
-    ungroup() |>
+    mutate(segmentID = row_number(), .by = c("fileID", "runID", "trackID"), .after = "trackID",
+           AttemptCount = as.numeric(AttemptCount)) |>
     filter(runID == segmentID) |>
-    select(fileID:trackID,
+    select(fileID,
            category = CategoryName,
            starts_with("v-"),
-           trk = Name,
+           runID,
            attempts = AttemptCount,
+           trackID,
+           trk = Name,
            split_time = SegmentHistory,
            # split_PB = BestSegmentTime,
            # run_PB = SplitTimes
