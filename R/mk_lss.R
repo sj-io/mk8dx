@@ -1,3 +1,10 @@
+#' Convert a folder of lss files into a table.
+#'
+#' @param folder A folder path to your MK8DX lss files.
+#'
+#' @return A tibble of your speedrun data.
+#' @export
+#'
 #' @import purrr
 #' @import dplyr
 #' @import tidyr
@@ -20,13 +27,13 @@ mk_lss <- function(folder) {
     unnest(Metadata) |>
     unnest(Metadata) |>
     filter(map_vec(Metadata, ~ !str_detect(., "^Switch$"))) |>
-    # filter(!str_detect(Metadata, "^Switch$")) |>
     unnest(Metadata) |>
     mutate(md = case_when(
       str_detect(Metadata, "Cup") ~ "v-cup",
       str_detect(Metadata, "\\d{2}cc") ~ "v-speed",
       str_detect(Metadata, "Items$") ~ "v-items",
-      str_detect(Metadata, "^(Digital|Cartridge)$") ~ "v-version"
+      str_detect(Metadata, "^(Digital|Cartridge)$") ~ "v-version",
+      str_detect(Metadata, "2.3.0") ~ "v-patch"
     )) |>
     unnest(Metadata) |>
     pivot_wider(names_from = "md", values_from = "Metadata", values_fill = NA_character_) |>
@@ -51,10 +58,11 @@ mk_lss <- function(folder) {
            category = CategoryName,
            starts_with("v-"),
            trk = Name,
-           total_attempts = AttemptCount,
+           attempts = AttemptCount,
            split_time = SegmentHistory,
-           split_PB = BestSegmentTime,
-           run_PB = SplitTimes) |>
+           # split_PB = BestSegmentTime,
+           # run_PB = SplitTimes
+           ) |>
     rename_with(~ str_remove(.x, "v-"), starts_with("v-"))
 
   lsstocsv
