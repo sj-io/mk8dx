@@ -1,6 +1,6 @@
 Package: mk8dx
 Title: Access Mario Kart Speedrun Data
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: 
     person("Sarah", "Johnson", , "sarahviamemphis@gmail.com", role = c("aut", "cre"))
 Description: Conveniently convert your Mario Kart lss speedrun files into table data.
