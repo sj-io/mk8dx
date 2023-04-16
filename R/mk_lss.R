@@ -16,6 +16,17 @@ mk_lss <- function(folder) {
   f <- list.files(s, pattern = ".lss")
   fileList <- paste0(s, "/", f)
 
+  attemptdates <- fileList |>
+    map(read_xml) |>
+    map(xml_find_all, "AttemptHistory") |>
+    map(xml_children) |>
+    map(xml_attrs) |>
+    enframe(name = "fileID") |>
+    unnest_longer(col = "value") |>
+    unnest_wider(col = "value") |>
+    mutate(id = as.integer(id)) |>
+    select(fileID, runID = id, run_started = started, run_ended = ended)
+
   lsstocsv <- fileList |>
     map(read_xml) |>
     map(as_list) |>
@@ -50,17 +61,19 @@ mk_lss <- function(folder) {
     mutate(segmentID = row_number(), .by = c("fileID", "runID", "trackID"), .after = "trackID",
            AttemptCount = as.numeric(AttemptCount)) |>
     filter(runID == segmentID) |>
+    left_join(attemptdates, by = c("fileID", "runID")) |>
     select(fileID,
            category = CategoryName,
            starts_with("v-"),
-           runID,
            attempts = AttemptCount,
+           runID,
+           starts_with("run_"),
            trackID,
            trk = Name,
            split_time = SegmentHistory,
            # split_PB = BestSegmentTime,
            # run_PB = SplitTimes
-           ) |>
+    ) |>
     rename_with(~ str_remove(.x, "v-"), starts_with("v-"))
 
   lsstocsv
