@@ -1,0 +1,81 @@
+trkID,trk,track,og_system,cup,category
+1,MKS,Mario Kart Stadium,,Mushroom,Nitro
+2,WP,Water Park,,Mushroom,Nitro
+3,SSC,Sweet Sweet Canyon,,Mushroom,Nitro
+4,TR,Thwomp Ruins,,Mushroom,Nitro
+5,MC,Mario Circuit,,Flower,Nitro
+6,TH,Toad Harbor,,Flower,Nitro
+7,TM,Twisted Mansion,,Flower,Nitro
+8,SGF,Shy Guy Falls,,Flower,Nitro
+9,SA,Sunshine Airport,,Star,Nitro
+10,DS,Dolphin Shoals,,Star,Nitro
+11,Ed,Electrodrome,,Star,Nitro
+12,MW,Mount Wario,,Star,Nitro
+13,CC,Cloudtop Cruise,,Special,Nitro
+14,BDD,Bone-Dry Dunes,,Special,Nitro
+15,BC,Bowser's Castle,,Special,Nitro
+16,RR,Rainbow Road,,Special,Nitro
+17,rMMM,Moo Moo Meadows,Wii,Shell,Retro
+18,rMC,Mario Circuit,GBA,Shell,Retro
+19,rCCB,Cheep Cheep Beach,DS,Shell,Retro
+20,rTT,Toad's Turnpike,N64,Shell,Retro
+21,rDDD,Dry Dry Desert,GCN,Banana,Retro
+22,rDP3,Donut Plains 3,SNES,Banana,Retro
+23,rRRy,Royal Raceway,N64,Banana,Retro
+24,rDKJ,DK Jungle,3DS,Banana,Retro
+25,rWS,Wario Stadium,DS,Leaf,Retro
+26,rSL,Sherbert Land,GCN,Leaf,Retro
+27,rMP,Music Park,3DS,Leaf,Retro
+28,rYV,Yoshi Valley,N64,Leaf,Retro
+29,rTTC,Tick-Tock Clock,DS,Lightning,Retro
+30,rPPS,Piranha Plant Slide,3DS,Lightning,Retro
+31,rGV,Grumble Volcano,Wii,Lightning,Retro
+32,rRRd,Rainbow Road,N64,Lightning,Retro
+33,dYC,Yoshi Circuit,GCN,Egg,Bonus
+34,dEA,Excitebike Arena,,Egg,Bonus
+35,dDD,Dragon Driftway,,Egg,Bonus
+36,dMC,Mute City,,Egg,Bonus
+37,dWGM,Wario's Gold Mine,Wii,Triforce,Bonus
+38,dRR,Rainbow Road,SNES,Triforce,Bonus
+39,dIIO,Ice Ice Outpost,,Triforce,Bonus
+40,dHC,Hyrule Circuit,,Triforce,Bonus
+41,dBP,Baby Park,GCN,Crossing,Bonus
+42,dCL,Cheese Land,GBA,Crossing,Bonus
+43,dWW,Wild Woods,,Crossing,Bonus
+44,dAC,Animal Crossing,,Crossing,Bonus
+45,dNBC,Neo Bowser City,3DS,Bell,Bonus
+46,dRiR,Ribbon Road,GBA,Bell,Bonus
+47,dSBS,Super Bell Subway,,Bell,Bonus
+48,dBB,Big Blue,,Bell,Bonus
+49,bPP,Paris Promenade,Tour,Golden Dash,Wave 1
+50,bTC,Toad Circuit,3DS,Golden Dash,Wave 1
+51,bCMo,Choco Mountain,N64,Golden Dash,Wave 1
+52,bCMa,Coconut Mall,Wii,Golden Dash,Wave 1
+53,bTB,Tokyo Blur,Tour,Lucky Cat,Wave 1
+54,bSR,Shroom Ridge,DS,Lucky Cat,Wave 1
+55,bSG,Sky Garden,GBA,Lucky Cat,Wave 1
+56,bNH,Ninja Hideaway,,Lucky Cat,Wave 1
+57,bNYM,New York Minute,Tour,Turnip,Wave 2
+58,bMC3,Mario Circuit 3,SNES,Turnip,Wave 2
+59,bKD,Kalimari Desert,N64,Turnip,Wave 2
+60,bWP,Waluigi Pinball,DS,Turnip,Wave 2
+61,bSS,Sydney Sprint,Tour,Propeller,Wave 2
+62,bSL,Snow Land,GBA,Propeller,Wave 2
+63,bMG,Mushroom Gorge,Wii,Propeller,Wave 2
+64,bSHS,Sky-High Sundae,,Propeller,Wave 2
+65,bLL,London Loop,Tour,Rock,Wave 3
+66,bBL,Boo Lake,GBA,Rock,Wave 3
+67,bRRM,Rock Rock Mountain,3DS,Rock,Wave 3
+68,bMT,Maple Treeway,Wii,Rock,Wave 3
+69,bBB,Berlin Byways,Tour,Moon,Wave 3
+70,bPG,Peach Gardens,DS,Moon,Wave 3
+71,bMM,Merry Mountain,,Moon,Wave 3
+72,bRR,Rainbow Road,3DS,Moon,Wave 3
+73,bAD,Amsterdam Drift,Tour,Fruit,Wave 4
+74,bRP,Riverside Park,GBA,Fruit,Wave 4
+75,bDKS,DK Summit,Wii,Fruit,Wave 4
+76,bYI,Yoshi Island,,Fruit,Wave 4
+77,bBR,Bangkok Rush,Tour,Boomerang,Wave 4
+78,bMC,Mario Circuit,DS,Boomerang,Wave 4
+79,bWS,Waluigi Stadium,GCN,Boomerang,Wave 4
+80,bSSy,Singapore Speedway,Tour,Boomerang,Wave 4

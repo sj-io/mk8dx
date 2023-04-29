@@ -1,6 +1,6 @@
 Package: mk8dx
 Title: Access Mario Kart Speedrun Data
-Version: 0.0.0.9002
+Version: 0.0.0.9003
 Authors@R: 
     person("Sarah", "Johnson", , "sarahviamemphis@gmail.com", role = c("aut", "cre"))
 Description: Conveniently convert your Mario Kart lss speedrun files into table data.
@@ -10,7 +10,9 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
     dplyr,
+    janitor,
     purrr,
+    readr,
     stringr,
     tidyr,
     xml2
@@ -19,3 +21,4 @@ Depends:
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+LazyData: true
