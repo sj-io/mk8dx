@@ -6,7 +6,9 @@
 
 ignore_unused_imports <- function() {
   readr::read_csv()
+  purrr::map()
 }
 
-english <- temp <- NULL
+utils::globalVariables(c("segment_name_path",
+                         "segment_time_path"))
 

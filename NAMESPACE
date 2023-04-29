@@ -2,8 +2,11 @@
 
 export(mk_attempts)
 export(mk_lss)
+export(mk_segment_times)
+export(mk_segments)
+export(mk_variables)
 import(dplyr)
-import(purrr)
 import(stringr)
 import(tidyr)
 import(xml2)
+importFrom(janitor,clean_names)

@@ -2,16 +2,16 @@
 % Please edit documentation in R/mk_lss.R
 \name{mk_lss}
 \alias{mk_lss}
-\title{Convert a folder of lss files into a table.}
+\title{Convert lss data into a table}
 \usage{
-mk_lss(folder)
+mk_lss(filepath)
 }
 \arguments{
-\item{folder}{A folder path to your MK8DX lss files.}
+\item{filepath}{A path to an lss file.}
 }
 \value{
-A tibble of your speedrun data.
+A tibble of the data for the lss file.
 }
 \description{
-Convert a folder of lss files into a table.
+Convert lss data into a table
 }

@@ -4,13 +4,13 @@
 \alias{mk_attempts}
 \title{Run attempt history}
 \usage{
-mk_attempts(filepath)
+mk_attempts(lss)
 }
 \arguments{
-\item{filepath}{A filepath to an lss file.}
+\item{lss}{An lss file read into R.}
 }
 \value{
-A tibble of your run attempt history for the lss file.
+A tibble of your run attempts for the lss file.
 }
 \description{
 Run attempt history

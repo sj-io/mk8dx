@@ -1,22 +1,21 @@
 #' Run attempt history
 #'
-#' @param filepath A filepath to an lss file.
+#' @param lss An lss file read into R.
 #'
-#' @return A tibble of your run attempt history for the lss file.
+#' @return A tibble of your run attempts for the lss file.
 #' @export
 #'
 #' @import xml2
-#' @import purrr
-#' @import dplyr
-mk_attempts <- function(filepath) {
+#' @import tidyr
+mk_attempts <- function(lss) {
 
-  attempts <- filepath %>%
-    read_xml() %>%
-    xml_find_all("AttemptHistory") %>%
-    xml_children() %>%
-    xml_attrs() %>%
-    map_dfr(enframe, .id = "attempt") %>%
-    pivot_wider() %>%
-    select(-1)
+  attempt_nodes <- xml_find_all(lss, "//Attempt")
+
+  tibble(
+    attempt_id = xml_attr(attempt_nodes, "id"),
+    attempt_started = xml_attr(attempt_nodes, "started"),
+    attempt_ended = xml_attr(attempt_nodes, "ended"),
+    attempt_time = xml_text(xml_child(attempt_nodes, "RealTime"))
+  )
 
 }
