@@ -10,5 +10,6 @@ ignore_unused_imports <- function() {
 }
 
 utils::globalVariables(c("segment_name_path",
-                         "segment_time_path"))
+                         "segment_time_path",
+                         "segment_id"))
 

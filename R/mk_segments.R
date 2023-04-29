@@ -12,12 +12,20 @@ mk_segments <- function(lss) {
   segment_names <- xml_find_all(lss, "//Segment/Name")
   best_segment_nodes <- xml_find_all(lss, "//Segment/BestSegmentTime/RealTime")
 
-  tibble(
+  segments <- tibble(
     segment_name = xml_text(segment_names),
     segment_name_path = xml_path(segment_names),
     segment_id = str_extract(segment_name_path, "(?<=Segment.)\\d"),
     best_segment_time = xml_text(best_segment_nodes)
   ) %>%
     select("segment_id", "segment_name", "best_segment_time")
+
+  bad_segment_id <- count(segments, segment_id)
+
+  if (nrow(bad_segment_id) >= 1) {
+    segments %>% mutate(segment_id = row_number())
+  } else {
+    segments
+  }
 
 }
