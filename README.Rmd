@@ -23,22 +23,24 @@ You can install the development version of mk8dx from [GitHub](https://github.co
 devtools::install_github("sj-io/mk8dx")
 ```
 
-After installing the package, load it to use it.
+Load the package to your library to use it.
 
 ```{r mk8dx}
 library(mk8dx)
 ```
 
-## Convert lss data to a table format
+## Package Contents
+
+### `mk_lss()`: Convert lss data to a table format
 
 `mk_lss` is a function that converts .lss file data into a table.
 
 ```{r mk_lss}
 library(dplyr)
 
-file <- "inst/extdata/bell-cup.lss"
+filepath <- "inst/extdata/bell-cup.lss"
 
-bell_cup <- mk_lss(file)
+bell_cup <- mk_lss(filepath)
 
 glimpse(bell_cup)
 ```
@@ -50,33 +52,95 @@ The `mk_lss()` function reads the file as xml data using `xml2`. It then pulls t
 -   `mk_segments()`: Gets the segment/track id for the run, track name, and your personal best time for that track.
 -   `mk_segment_times()`: Gets the split time for the track.
 
-### Map a folder of lss files
+If `mk_lss()` is not working for you, running the file though these functions can help identify the problem.
+
+### `tracks` dataset
+
+The `tracks` dataset is a list of every track in MK8DX (as of wave 4). It can be used as a reference or to standardize/correct track names for use in tables or graphs. The dataset contains the track name, in both full (`track`) and abbreviated (`trk`) forms. The original system tag (`og_system`) is in a separate column to allow unique styling, i.e. "(DS) Peach Gardens", "Peach Gardens DS".
+
+```{r tracks}
+tracks[13:20, ]
+```
+
+#### Join by track abbreviation
+
+If you use standard track abbreviations[^1] as your `segment_name`, such as
+
+[^1]: Abbreviated names were copied from [the MK8DX Speedrunning discord](https://discord.com/channels/199214365860298752/199214365860298752/998310385545384138).
+
+```{r abbr}
+bell_cup %>% 
+  select(attempt_id, segment_name, segment_time) %>% 
+  head(4)
+```
+
+you can join `segment_name` with `tracks$trk` to create new names.
+
+```{r abbrJoin}
+bell_cup %>%
+  left_join(tracks, by = c("segment_name" = "trk")) %>%
+  mutate(segment_name = if_else(!is.na(og_system),
+                                paste0(track, " [", og_system, "]"),
+                                track)) %>%
+  select(attempt_id, segment_name, segment_time)
+```
+
+#### Join by position
+
+If your `segment_name` cannot easily be matched, you can also join by the track's position in the category. For instance, you can join by the `tracks$cup` and its corresponding position (`tracks$cup_ID`).
+
+With the `bell_cup` dataset,
+
+```{r}
+bell_cup %>% 
+  select(category, individual_cup, segment_id, segment_name) %>% 
+  head(4)
+```
+
+I can join the `individual_cup` and `segment_id` with the `tracks` dataset.
+
+```{r}
+bell_cup %>% 
+  left_join(tracks, by = c("individual_cup" = "cup",
+                           "segment_id" = "cup_ID")) %>% 
+  mutate(segment_name = if_else(!is.na(og_system),
+                                paste0(track, " [", og_system, "]"),
+                                track)) %>%
+  select(category, individual_cup, segment_id, segment_name)
+```
+
+For other categories, you can use the 16-track name (`trks16_name`) and position (`trks16_ID`); the 48-track position (`trks48_ID`); or the unique ID of the track, `trkID`, which also functions as the eventual 96-track position.
+
+## Further Usage
+
+### Convert a folder of lss files to a table
 
 To get data from all lss files in a folder, use the `purrr::map()` function.
 
 ```{r map_lss}
 library(purrr)
 
-f <- "inst/extdata/"     # folder path
+# list all files in a folder path
+f <- "inst/extdata/"
 files <- paste0(f, list.files(f, pattern = ".lss"))
 
+# get the lss data for each file and bind together
 all_runs <- map(files, mk_lss) |> list_rbind()
 
 glimpse(all_runs)
 ```
 
-### Convert split time data
+### Convert date & time formats
 
 Date-times and run/split times are currently saved as character data. To convert these, use the `lubridate` package.
 
 ```{r mk_time}
 library(lubridate)
 
-# format dates; convert times to seconds
 all_runs_with_periods <- all_runs %>% 
   mutate(
-    across(c(attempt_started, attempt_ended), ~ mdy_hms(.x)),
-    across(ends_with("_time"), ~ period_to_seconds(hms(.x))),
+    across(c(attempt_started, attempt_ended), ~ mdy_hms(.x)), # dates
+    across(ends_with("_time"), ~ period_to_seconds(hms(.x))), # times
     .keep = "used"
     ) %>% rename(PB_time = best_segment_time)
 # last two lines make table legible in readme
@@ -84,6 +148,6 @@ all_runs_with_periods <- all_runs %>%
 head(all_runs_with_periods)
 ```
 
-## Credit
+## Credits
 
 This package is based on [Chipdelmal's MK8D package](https://github.com/Chipdelmal/MK8D), which uses python to convert lss files to a dataframe.
