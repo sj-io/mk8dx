@@ -42,19 +42,19 @@ glimpse(bell_cup)
     ## Rows: 8
     ## Columns: 14
     ## $ category          <chr> "Bonus Cups", "Bonus Cups", "Bonus Cups", "Bonus Cup…
-    ## $ attempt_count     <chr> "2", "2", "2", "2", "2", "2", "2", "2"
+    ## $ attempt_count     <dbl> 2, 2, 2, 2, 2, 2, 2, 2
     ## $ individual_cup    <chr> "Bell Cup", "Bell Cup", "Bell Cup", "Bell Cup", "Bel…
     ## $ cc                <chr> "150cc", "150cc", "150cc", "150cc", "150cc", "150cc"…
     ## $ items             <chr> "No Items", "No Items", "No Items", "No Items", "No …
     ## $ version           <chr> "Digital", "Digital", "Digital", "Digital", "Digital…
-    ## $ attempt_id        <chr> "1", "1", "1", "1", "2", "2", "2", "2"
-    ## $ attempt_started   <chr> "03/26/2023 21:25:31", "03/26/2023 21:25:31", "03/26…
-    ## $ attempt_ended     <chr> "03/26/2023 21:35:05", "03/26/2023 21:35:05", "03/26…
-    ## $ attempt_time      <chr> "00:09:33.779000000", "00:09:33.779000000", "00:09:3…
+    ## $ attempt_id        <dbl> 1, 1, 1, 1, 2, 2, 2, 2
+    ## $ attempt_started   <dttm> 2023-03-26 21:25:31, 2023-03-26 21:25:31, 2023-03-26…
+    ## $ attempt_ended     <dttm> 2023-03-26 21:35:05, 2023-03-26 21:35:05, 2023-03-26…
+    ## $ attempt_time      <dbl> 573.779, 573.779, 573.779, 573.779, 550.774, 550.77…
     ## $ segment_id        <int> 1, 2, 3, 4, 1, 2, 3, 4
-    ## $ segment_time      <chr> "00:02:33.480000000", "00:02:36.098999999", "00:02:2…
+    ## $ segment_time      <dbl> 153.480, 156.099, 144.452, 119.748, 141.554, 143.80…
     ## $ segment_name      <chr> "dNBC", "dRiR", "dSBS", "dBB", "dNBC", "dRiR", "dSBS…
-    ## $ best_segment_time <chr> "00:02:21.553999999", "00:02:23.809000000", "00:02:2…
+    ## $ best_segment_time <dbl> 141.554, 143.809, 142.057, 119.748, 141.554, 143.809…
 
 The `mk_lss()` function reads the file as xml data using `xml2`. It then
 pulls the data with these functions:
@@ -65,7 +65,8 @@ pulls the data with these functions:
   and how long the run lasted (will be NA if run was not completed).
 - `mk_segments()`: Gets the segment/track id for the run, track name,
   and your personal best time for that track.
-- `mk_segment_times()`: Gets the split time for the track.
+- `mk_segment_times()`: Gets the split time for the track. All times are
+  given in seconds.
 
 If `mk_lss()` is not working for you, running the file though these
 functions can help identify the problem.
@@ -97,41 +98,27 @@ tracks[13:20, ]
 
 #### Join by track abbreviation
 
-If you use standard track abbreviations[^1] as your `segment_name`, such
-as
-
-``` r
-bell_cup %>% 
-  select(attempt_id, segment_name, segment_time) %>% 
-  head(4)
-```
-
-    ##   attempt_id segment_name       segment_time
-    ## 1          1         dNBC 00:02:33.480000000
-    ## 2          1         dRiR 00:02:36.098999999
-    ## 3          1         dSBS 00:02:24.452000000
-    ## 4          1          dBB 00:01:59.748000001
-
-you can join `segment_name` with `tracks$trk` to create new names.
+If you use standard track abbreviations[^1] as your `segment_name`, you
+can join `segment_name` with `tracks$trk` to create new names.
 
 ``` r
 bell_cup %>%
   left_join(tracks, by = c("segment_name" = "trk")) %>%
-  mutate(segment_name = if_else(!is.na(og_system),
+  mutate(new_segment_name = if_else(!is.na(og_system),
                                 paste0(track, " [", og_system, "]"),
                                 track)) %>%
-  select(attempt_id, segment_name, segment_time)
+  select(attempt_id, segment_name, new_segment_name, segment_time)
 ```
 
-    ##   attempt_id          segment_name       segment_time
-    ## 1          1 Neo Bowser City [3DS] 00:02:33.480000000
-    ## 2          1     Ribbon Road [GBA] 00:02:36.098999999
-    ## 3          1     Super Bell Subway 00:02:24.452000000
-    ## 4          1              Big Blue 00:01:59.748000001
-    ## 5          2 Neo Bowser City [3DS] 00:02:21.553999999
-    ## 6          2     Ribbon Road [GBA] 00:02:23.809000000
-    ## 7          2     Super Bell Subway 00:02:22.057000000
-    ## 8          2              Big Blue 00:02:03.354000000
+    ##   attempt_id segment_name      new_segment_name segment_time
+    ## 1          1         dNBC Neo Bowser City [3DS]      153.480
+    ## 2          1         dRiR     Ribbon Road [GBA]      156.099
+    ## 3          1         dSBS     Super Bell Subway      144.452
+    ## 4          1          dBB              Big Blue      119.748
+    ## 5          2         dNBC Neo Bowser City [3DS]      141.554
+    ## 6          2         dRiR     Ribbon Road [GBA]      143.809
+    ## 7          2         dSBS     Super Bell Subway      142.057
+    ## 8          2          dBB              Big Blue      123.354
 
 #### Join by position
 
@@ -139,42 +126,25 @@ If your `segment_name` cannot easily be matched, you can also join by
 the track’s position in the category. For instance, you can join by the
 `tracks$cup` and its corresponding position (`tracks$cup_ID`).
 
-With the `bell_cup` dataset,
-
-``` r
-bell_cup %>% 
-  select(category, individual_cup, segment_id, segment_name) %>% 
-  head(4)
-```
-
-    ##     category individual_cup segment_id segment_name
-    ## 1 Bonus Cups       Bell Cup          1         dNBC
-    ## 2 Bonus Cups       Bell Cup          2         dRiR
-    ## 3 Bonus Cups       Bell Cup          3         dSBS
-    ## 4 Bonus Cups       Bell Cup          4          dBB
-
-I can join the `individual_cup` and `segment_id` with the `tracks`
-dataset.
-
 ``` r
 bell_cup %>% 
   left_join(tracks, by = c("individual_cup" = "cup",
                            "segment_id" = "cup_ID")) %>% 
-  mutate(segment_name = if_else(!is.na(og_system),
+  mutate(new_segment_name = if_else(!is.na(og_system),
                                 paste0(track, " [", og_system, "]"),
                                 track)) %>%
-  select(category, individual_cup, segment_id, segment_name)
+  select(category, individual_cup, segment_id, segment_name, new_segment_name)
 ```
 
-    ##     category individual_cup segment_id          segment_name
-    ## 1 Bonus Cups       Bell Cup          1 Neo Bowser City [3DS]
-    ## 2 Bonus Cups       Bell Cup          2     Ribbon Road [GBA]
-    ## 3 Bonus Cups       Bell Cup          3     Super Bell Subway
-    ## 4 Bonus Cups       Bell Cup          4              Big Blue
-    ## 5 Bonus Cups       Bell Cup          1 Neo Bowser City [3DS]
-    ## 6 Bonus Cups       Bell Cup          2     Ribbon Road [GBA]
-    ## 7 Bonus Cups       Bell Cup          3     Super Bell Subway
-    ## 8 Bonus Cups       Bell Cup          4              Big Blue
+    ##     category individual_cup segment_id segment_name      new_segment_name
+    ## 1 Bonus Cups       Bell Cup          1         dNBC Neo Bowser City [3DS]
+    ## 2 Bonus Cups       Bell Cup          2         dRiR     Ribbon Road [GBA]
+    ## 3 Bonus Cups       Bell Cup          3         dSBS     Super Bell Subway
+    ## 4 Bonus Cups       Bell Cup          4          dBB              Big Blue
+    ## 5 Bonus Cups       Bell Cup          1         dNBC Neo Bowser City [3DS]
+    ## 6 Bonus Cups       Bell Cup          2         dRiR     Ribbon Road [GBA]
+    ## 7 Bonus Cups       Bell Cup          3         dSBS     Super Bell Subway
+    ## 8 Bonus Cups       Bell Cup          4          dBB              Big Blue
 
 For other categories, you can use the 16-track name (`trks16_name`) and
 position (`trks16_ID`); the 48-track position (`trks48_ID`); or the
@@ -201,49 +171,22 @@ all_runs <- map(files, mk_lss) |> list_rbind()
 glimpse(all_runs)
 ```
 
-    ## Rows: 24
+    ## Rows: 28
     ## Columns: 14
     ## $ category          <chr> "Bonus Cups", "Bonus Cups", "Bonus Cups", "Bonus Cup…
-    ## $ attempt_count     <chr> "2", "2", "2", "2", "2", "2", "2", "2", "1", "1", "1…
+    ## $ attempt_count     <dbl> 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1…
     ## $ individual_cup    <chr> "Bell Cup", "Bell Cup", "Bell Cup", "Bell Cup", "Bel…
     ## $ cc                <chr> "150cc", "150cc", "150cc", "150cc", "150cc", "150cc"…
     ## $ items             <chr> "No Items", "No Items", "No Items", "No Items", "No …
     ## $ version           <chr> "Digital", "Digital", "Digital", "Digital", "Digital…
-    ## $ attempt_id        <chr> "1", "1", "1", "1", "2", "2", "2", "2", "1", "1", "1…
-    ## $ attempt_started   <chr> "03/26/2023 21:25:31", "03/26/2023 21:25:31", "03/26…
-    ## $ attempt_ended     <chr> "03/26/2023 21:35:05", "03/26/2023 21:35:05", "03/26…
-    ## $ attempt_time      <chr> "00:09:33.779000000", "00:09:33.779000000", "00:09:3…
-    ## $ segment_id        <int> 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1…
-    ## $ segment_time      <chr> "00:02:33.480000000", "00:02:36.098999999", "00:02:2…
+    ## $ attempt_id        <dbl> 1, 1, 1, 1, 2, 2, 2, 2, NA, NA, NA, NA, 1, 1, 1, 1, …
+    ## $ attempt_started   <dttm> 2023-03-26 21:25:31, 2023-03-26 21:25:31, 2023-03-2…
+    ## $ attempt_ended     <dttm> 2023-03-26 21:35:05, 2023-03-26 21:35:05, 2023-03-2…
+    ## $ attempt_time      <dbl> 573.779, 573.779, 573.779, 573.779, 550.774, 550.774…
+    ## $ segment_id        <int> 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 5, 6…
+    ## $ segment_time      <dbl> 153.480, 156.099, 144.452, 119.748, 141.554, 143.809…
     ## $ segment_name      <chr> "dNBC", "dRiR", "dSBS", "dBB", "dNBC", "dRiR", "dSBS…
-    ## $ best_segment_time <chr> "00:02:21.553999999", "00:02:23.809000000", "00:02:2…
-
-### Convert date & time formats
-
-Date-times and run/split times are currently saved as character data. To
-convert these, use the `lubridate` package.
-
-``` r
-library(lubridate)
-
-all_runs_with_periods <- all_runs %>% 
-  mutate(
-    across(c(attempt_started, attempt_ended), ~ mdy_hms(.x)), # dates
-    across(ends_with("_time"), ~ period_to_seconds(hms(.x))), # times
-    .keep = "used"
-    ) %>% rename(PB_time = best_segment_time)
-# last two lines make table legible in readme
-
-head(all_runs_with_periods)
-```
-
-    ##       attempt_started       attempt_ended attempt_time segment_time PB_time
-    ## 1 2023-03-26 21:25:31 2023-03-26 21:35:05      573.779      153.480 141.554
-    ## 2 2023-03-26 21:25:31 2023-03-26 21:35:05      573.779      156.099 143.809
-    ## 3 2023-03-26 21:25:31 2023-03-26 21:35:05      573.779      144.452 142.057
-    ## 4 2023-03-26 21:25:31 2023-03-26 21:35:05      573.779      119.748 119.748
-    ## 5 2023-03-26 21:35:48 2023-03-26 21:44:59      550.774      141.554 141.554
-    ## 6 2023-03-26 21:35:48 2023-03-26 21:44:59      550.774      143.809 143.809
+    ## $ best_segment_time <dbl> 141.554, 143.809, 142.057, 119.748, 141.554, 143.809…
 
 ## Credits
 
