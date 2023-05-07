@@ -12,18 +12,18 @@ mk_variables <- function(lss) {
 
   variable_nodes <- xml_find_all(lss, "//Variable")
 
-  if (length(variable_nodes) == 0) {
+  if (length(variable_nodes) != 0) {
     tibble(
       category = xml_text(xml_child(lss, "CategoryName")),
-      attempt_count = xml_text(xml_child(lss, "AttemptCount"))
-    )
-  } else {
-    tibble(
-      category = xml_text(xml_child(lss, "CategoryName")),
-      attempt_count = xml_text(xml_child(lss, "AttemptCount")),
+      attempt_count = as.numeric(xml_text(xml_child(lss, "AttemptCount"))),
       name = xml_attr(variable_nodes, "name"),
       value = xml_text(variable_nodes)
     ) %>%
       pivot_wider() %>% janitor::clean_names()
+  } else {
+    tibble(
+      category = xml_text(xml_child(lss, "CategoryName")),
+      attempt_count = as.numeric(xml_text(xml_child(lss, "AttemptCount")))
+    )
   }
 }
