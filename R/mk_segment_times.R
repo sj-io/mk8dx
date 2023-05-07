@@ -14,8 +14,8 @@ mk_segment_times <- function(lss) {
 
   segment_times <- tibble(
     segment_time_path = xml_path(segment_time_nodes),
-    segment_id = str_extract(segment_time_path, "(?<=Segment.)\\d"),
-    attempt_id = xml_attr(xml_parent(segment_time_nodes), "id"),
+    segment_id = as.numeric(str_extract(segment_time_path, "(?<=Segment.)\\d")),
+    attempt_id = as.numeric(xml_attr(xml_parent(segment_time_nodes), "id")),
     segment_time = xml_text(segment_time_nodes)
   ) %>% select("segment_id", "attempt_id", "segment_time")
 

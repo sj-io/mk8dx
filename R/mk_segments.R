@@ -15,10 +15,14 @@ mk_segments <- function(lss) {
   segments <- tibble(
     segment_name = xml_text(segment_names),
     segment_name_path = xml_path(segment_names),
-    segment_id = str_extract(segment_name_path, "(?<=Segment.)\\d"),
-    best_segment_time = xml_text(best_segment_nodes)
+    segment_id = as.numeric(str_extract(segment_name_path, "(?<=Segment.)\\d"))
   ) %>%
-    select("segment_id", "segment_name", "best_segment_time")
+    select("segment_id", "segment_name")
+
+  if (length(best_segment_nodes) >= 1) {
+    segments <- segments %>%
+      mutate(best_segment_time = xml_text(best_segment_nodes))
+  }
 
   bad_segment_id <- count(segments, segment_id)
 

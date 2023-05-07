@@ -33,7 +33,7 @@ library(mk8dx)
 
 ### `mk_lss()`: Convert lss data to a table format
 
-`mk_lss` is a function that converts .lss file data into a table.
+`mk_lss()` is a function that converts .lss file data into a table.
 
 ```{r mk_lss}
 library(dplyr)
@@ -50,7 +50,7 @@ The `mk_lss()` function reads the file as xml data using `xml2`. It then pulls t
 -   `mk_variables()`: Gets the category name, number of attempts, and metadata variables, if any exist.
 -   `mk_attempts()`: Gets the attempt id, when the run began and ended, and how long the run lasted (will be NA if run was not completed).
 -   `mk_segments()`: Gets the segment/track id for the run, track name, and your personal best time for that track.
--   `mk_segment_times()`: Gets the split time for the track.
+-   `mk_segment_times()`: Gets the split time for the track. All times are given in seconds.
 
 If `mk_lss()` is not working for you, running the file though these functions can help identify the problem.
 
@@ -64,49 +64,31 @@ tracks[13:20, ]
 
 #### Join by track abbreviation
 
-If you use standard track abbreviations[^1] as your `segment_name`, such as
+If you use standard track abbreviations[^1] as your `segment_name`, you can join `segment_name` with `tracks$trk` to create new names.
 
 [^1]: Abbreviated names were copied from [the MK8DX Speedrunning discord](https://discord.com/channels/199214365860298752/199214365860298752/998310385545384138).
-
-```{r abbr}
-bell_cup %>% 
-  select(attempt_id, segment_name, segment_time) %>% 
-  head(4)
-```
-
-you can join `segment_name` with `tracks$trk` to create new names.
 
 ```{r abbrJoin}
 bell_cup %>%
   left_join(tracks, by = c("segment_name" = "trk")) %>%
-  mutate(segment_name = if_else(!is.na(og_system),
+  mutate(new_segment_name = if_else(!is.na(og_system),
                                 paste0(track, " [", og_system, "]"),
                                 track)) %>%
-  select(attempt_id, segment_name, segment_time)
+  select(attempt_id, segment_name, new_segment_name, segment_time)
 ```
 
 #### Join by position
 
 If your `segment_name` cannot easily be matched, you can also join by the track's position in the category. For instance, you can join by the `tracks$cup` and its corresponding position (`tracks$cup_ID`).
 
-With the `bell_cup` dataset,
-
-```{r}
-bell_cup %>% 
-  select(category, individual_cup, segment_id, segment_name) %>% 
-  head(4)
-```
-
-I can join the `individual_cup` and `segment_id` with the `tracks` dataset.
-
 ```{r}
 bell_cup %>% 
   left_join(tracks, by = c("individual_cup" = "cup",
                            "segment_id" = "cup_ID")) %>% 
-  mutate(segment_name = if_else(!is.na(og_system),
+  mutate(new_segment_name = if_else(!is.na(og_system),
                                 paste0(track, " [", og_system, "]"),
                                 track)) %>%
-  select(category, individual_cup, segment_id, segment_name)
+  select(category, individual_cup, segment_id, segment_name, new_segment_name)
 ```
 
 For other categories, you can use the 16-track name (`trks16_name`) and position (`trks16_ID`); the 48-track position (`trks48_ID`); or the unique ID of the track, `trkID`, which also functions as the eventual 96-track position.
@@ -128,24 +110,6 @@ files <- paste0(f, list.files(f, pattern = ".lss"))
 all_runs <- map(files, mk_lss) |> list_rbind()
 
 glimpse(all_runs)
-```
-
-### Convert date & time formats
-
-Date-times and run/split times are currently saved as character data. To convert these, use the `lubridate` package.
-
-```{r mk_time}
-library(lubridate)
-
-all_runs_with_periods <- all_runs %>% 
-  mutate(
-    across(c(attempt_started, attempt_ended), ~ mdy_hms(.x)), # dates
-    across(ends_with("_time"), ~ period_to_seconds(hms(.x))), # times
-    .keep = "used"
-    ) %>% rename(PB_time = best_segment_time)
-# last two lines make table legible in readme
-
-head(all_runs_with_periods)
 ```
 
 ## Credits
