@@ -29,8 +29,11 @@ mk_lss <- function(filepath) {
     cbind(run_variables, attempts) %>%
       left_join(segment_times, "attempt_id") %>%
       left_join(run_segments, "segment_id") %>%
-      mutate(across(c("attempt_started", "attempt_ended"), ~ lubridate::mdy_hms(.x)),
-             across(ends_with("_time"), ~ lubridate::period_to_seconds(lubridate::hms(.x))))
+      mutate(across(c("attempt_started", "attempt_ended"),
+                    ~ lubridate::mdy_hms(.x)),
+             across(ends_with("_time"),
+                    ~ lubridate::period_to_seconds(lubridate::hms(.x)))) %>%
+      suppressWarnings()
   } else {
     cbind(run_variables, run_segments)
   }

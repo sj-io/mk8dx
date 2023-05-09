@@ -29,11 +29,11 @@ Load the package to your library to use it.
 library(mk8dx)
 ```
 
-## Package Contents
+## mk_lss
 
 ### `mk_lss()`: Convert lss data to a table format
 
-`mk_lss()` is a function that converts .lss file data into a table.
+Enter a filepath into `mk_lss()` to convert .lss data into a table.
 
 ```{r mk_lss}
 library(dplyr)
@@ -42,7 +42,7 @@ filepath <- "inst/extdata/bell-cup.lss"
 
 bell_cup <- mk_lss(filepath)
 
-glimpse(bell_cup)
+head(bell_cup, 4)
 ```
 
 The `mk_lss()` function reads the file as xml data using `xml2`. It then pulls the data with these functions:
@@ -54,7 +54,7 @@ The `mk_lss()` function reads the file as xml data using `xml2`. It then pulls t
 
 If `mk_lss()` is not working for you, running the file though these functions can help identify the problem.
 
-### `tracks` dataset
+## `tracks` dataset
 
 The `tracks` dataset is a list of every track in MK8DX (as of wave 4). It can be used as a reference or to standardize/correct track names for use in tables or graphs. The dataset contains the track name, in both full (`track`) and abbreviated (`trk`) forms. The original system tag (`og_system`) is in a separate column to allow unique styling, i.e. "(DS) Peach Gardens", "Peach Gardens DS".
 
@@ -62,7 +62,7 @@ The `tracks` dataset is a list of every track in MK8DX (as of wave 4). It can be
 tracks[13:20, ]
 ```
 
-#### Join by track abbreviation
+### Join by track abbreviation
 
 If you use standard track abbreviations[^1] as your `segment_name`, you can join `segment_name` with `tracks$trk` to create new names.
 
@@ -71,13 +71,13 @@ If you use standard track abbreviations[^1] as your `segment_name`, you can join
 ```{r abbrJoin}
 bell_cup %>%
   left_join(tracks, by = c("segment_name" = "trk")) %>%
-  mutate(new_segment_name = if_else(!is.na(og_system),
-                                paste0(track, " [", og_system, "]"),
+  mutate(new_segment_name = if_else(!is.na(console),
+                                paste0(track, " [", console, "]"),
                                 track)) %>%
   select(attempt_id, segment_name, new_segment_name, segment_time)
 ```
 
-#### Join by position
+### Join by position
 
 If your `segment_name` cannot easily be matched, you can also join by the track's position in the category. For instance, you can join by the `tracks$cup` and its corresponding position (`tracks$cup_ID`).
 
@@ -85,8 +85,8 @@ If your `segment_name` cannot easily be matched, you can also join by the track'
 bell_cup %>% 
   left_join(tracks, by = c("individual_cup" = "cup",
                            "segment_id" = "cup_ID")) %>% 
-  mutate(new_segment_name = if_else(!is.na(og_system),
-                                paste0(track, " [", og_system, "]"),
+  mutate(new_segment_name = if_else(!is.na(console),
+                                paste0(track, " [", console, "]"),
                                 track)) %>%
   select(category, individual_cup, segment_id, segment_name, new_segment_name)
 ```
