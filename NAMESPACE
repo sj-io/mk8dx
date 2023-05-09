@@ -2,6 +2,7 @@
 
 export(mk_attempts)
 export(mk_lss)
+export(mk_lss_folder)
 export(mk_segment_times)
 export(mk_segments)
 export(mk_variables)
