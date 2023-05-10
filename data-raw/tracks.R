@@ -31,7 +31,8 @@ tracks_raw <- read_csv("data-raw/tracks.csv")
 #   select(cat, category, cup, trackID, trkID:og_system)
 
 tracks <- tracks_raw %>%
-  select(trkID, trk:og_system, cup,
+  select(trk_ID = trkID, trk, track,
+         console = og_system, cup,
          cat = category,
          everything()) %>%
   mutate(cup = paste(cup, "Cup"),
@@ -50,12 +51,12 @@ tracks <- tracks_raw %>%
          ) %>%
   select(-c(wave, cat)) %>%
   mutate(trks16_ID = row_number(), .by = "trks16_name", .before = "trks16_name") %>%
-  select(trkID:og_system,
+  select(trk_ID:console,
          cup_ID, cup,
          everything()) %>%
-  mutate(trks48_ID = ifelse(trkID > 48,
-                            trkID - 48,
-                            trkID))
+  mutate(trks48_ID = ifelse(trk_ID > 48,
+                            trk_ID - 48,
+                            trk_ID))
 
 save(tracks, file = "data/tracks.rda")
 

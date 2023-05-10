@@ -29,11 +29,11 @@ Load the package to your library to use it.
 library(mk8dx)
 ```
 
-## Package Contents
+## `mk_lss`
 
-### `mk_lss()`: Convert lss data to a table format
+### Convert lss data to a table format
 
-`mk_lss()` is a function that converts .lss file data into a table.
+Enter a filepath into `mk_lss()` to convert .lss data into a table.
 
 ```{r mk_lss}
 library(dplyr)
@@ -42,27 +42,51 @@ filepath <- "inst/extdata/bell-cup.lss"
 
 bell_cup <- mk_lss(filepath)
 
-glimpse(bell_cup)
+head(bell_cup, 4)
 ```
 
-The `mk_lss()` function reads the file as xml data using `xml2`. It then pulls the data with these functions:
+The `mk_lss()` function reads the file as xml data using `xml2`. It then gets your file's metadata variables, attempts, and split data.
 
--   `mk_variables()`: Gets the category name, number of attempts, and metadata variables, if any exist.
--   `mk_attempts()`: Gets the attempt id, when the run began and ended, and how long the run lasted (will be NA if run was not completed).
--   `mk_segments()`: Gets the segment/track id for the run, track name, and your personal best time for that track.
--   `mk_segment_times()`: Gets the split time for the track. All times are given in seconds.
+Note: All split/run times are given in seconds. If runs are not completed, the attempt time will be NA. If you reset on the first track, there will be more NA variables.
 
-If `mk_lss()` is not working for you, running the file though these functions can help identify the problem.
+To convert a folder of lss files into one table, use `mk_lss_folder()`.
 
-### `tracks` dataset
+```{r}
+folderpath <- "inst/extdata"
 
-The `tracks` dataset is a list of every track in MK8DX (as of wave 4). It can be used as a reference or to standardize/correct track names for use in tables or graphs. The dataset contains the track name, in both full (`track`) and abbreviated (`trk`) forms. The original system tag (`og_system`) is in a separate column to allow unique styling, i.e. "(DS) Peach Gardens", "Peach Gardens DS".
+all_runs <- mk_lss_folder(folderpath)
+
+all_runs[7:14, ]
+```
+
+## `mk_repair`
+### Repair incorrectly entered data
+
+This is an experimental function to repair some columns that might have issues if your splits were entered incorrectly, or if you have old, outdated duplicate files in the same folder as more recent data.
+
+```{r}
+repaired_runs <- mk_repair(all_runs)
+
+repaired_runs[29:32, ]
+```
+
+Current features:
+
+- Move/correct `individual_cup` names entered into the `category` field
+- Trim whitespace of characters
+- Round all attempt/split times to the hundredths place.
+- Fill in missing metadata variables (only for matching category/cup)
+- Update outdated split data for matching run categories/variables.
+
+## `tracks` dataset
+
+The `tracks` dataset is a list of every track in MK8DX (as of wave 4). It can be used as a reference or to standardize/correct track names for use in tables or graphs. The dataset contains the track name, in both full (`track`) and abbreviated (`trk`) forms. The original console tag (`console`) is in a separate column to allow unique styling, i.e. "(DS) Peach Gardens", "Peach Gardens DS".
 
 ```{r tracks}
 tracks[13:20, ]
 ```
 
-#### Join by track abbreviation
+### Join by track abbreviation
 
 If you use standard track abbreviations[^1] as your `segment_name`, you can join `segment_name` with `tracks$trk` to create new names.
 
@@ -71,13 +95,13 @@ If you use standard track abbreviations[^1] as your `segment_name`, you can join
 ```{r abbrJoin}
 bell_cup %>%
   left_join(tracks, by = c("segment_name" = "trk")) %>%
-  mutate(new_segment_name = if_else(!is.na(og_system),
-                                paste0(track, " [", og_system, "]"),
+  mutate(new_segment_name = if_else(!is.na(console),
+                                paste0(track, " [", console, "]"),
                                 track)) %>%
   select(attempt_id, segment_name, new_segment_name, segment_time)
 ```
 
-#### Join by position
+### Join by position
 
 If your `segment_name` cannot easily be matched, you can also join by the track's position in the category. For instance, you can join by the `tracks$cup` and its corresponding position (`tracks$cup_ID`).
 
@@ -85,32 +109,13 @@ If your `segment_name` cannot easily be matched, you can also join by the track'
 bell_cup %>% 
   left_join(tracks, by = c("individual_cup" = "cup",
                            "segment_id" = "cup_ID")) %>% 
-  mutate(new_segment_name = if_else(!is.na(og_system),
-                                paste0(track, " [", og_system, "]"),
+  mutate(new_segment_name = if_else(!is.na(console),
+                                paste0(track, " [", console, "]"),
                                 track)) %>%
   select(category, individual_cup, segment_id, segment_name, new_segment_name)
 ```
 
 For other categories, you can use the 16-track name (`trks16_name`) and position (`trks16_ID`); the 48-track position (`trks48_ID`); or the unique ID of the track, `trkID`, which also functions as the eventual 96-track position.
-
-## Further Usage
-
-### Convert a folder of lss files to a table
-
-To get data from all lss files in a folder, use the `purrr::map()` function.
-
-```{r map_lss}
-library(purrr)
-
-# list all files in a folder path
-f <- "inst/extdata/"
-files <- paste0(f, list.files(f, pattern = ".lss"))
-
-# get the lss data for each file and bind together
-all_runs <- map(files, mk_lss) |> list_rbind()
-
-glimpse(all_runs)
-```
 
 ## Credits
 

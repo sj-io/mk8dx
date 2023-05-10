@@ -7,10 +7,10 @@
 \format{
 Data fram with columns
 \describe{
-\item{trkID}{key. unique ID for the track}
+\item{trk_ID}{key. unique ID for the track}
 \item{trk}{track abbreviation}
 \item{track}{base name for the track}
-\item{og_system}{the original gaming system for the track}
+\item{console}{the original gaming console for the track}
 \item{cup_ID}{track's split position in a 4-track cup run}
 \item{cup}{track's cup}
 \item{trks16_ID}{track's split position in a 16-track run}
