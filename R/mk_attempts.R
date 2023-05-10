@@ -3,7 +3,6 @@
 #' @param lss An lss file read into R.
 #'
 #' @return A tibble of your run attempts for the lss file.
-#' @export
 #'
 #' @import xml2
 #' @import tidyr

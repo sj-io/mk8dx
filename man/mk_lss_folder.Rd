@@ -10,7 +10,7 @@ mk_lss_folder(folderpath)
 \item{folderpath}{A folder containing lss files}
 }
 \value{
-A vector of lss filepaths
+A table of all lss data in the folder
 }
 \description{
 Get all lss files in a folder

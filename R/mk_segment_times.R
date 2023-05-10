@@ -3,7 +3,6 @@
 #' @param lss An lss file read into R.
 #'
 #' @return A tibble of track times.
-#' @export
 #'
 #' @import xml2
 #' @import dplyr
