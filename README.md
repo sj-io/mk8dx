@@ -23,9 +23,9 @@ Load the package to your library to use it.
 library(mk8dx)
 ```
 
-## mk_lss
+## `mk_lss`
 
-### `mk_lss()`: Convert lss data to a table format
+### Convert lss data to a table format
 
 Enter a filepath into `mk_lss()` to convert .lss data into a table.
 
@@ -56,28 +56,91 @@ head(bell_cup, 4)
     ## 4          dBB           119.748
 
 The `mk_lss()` function reads the file as xml data using `xml2`. It then
-pulls the data with these functions:
+gets your file’s metadata variables, attempts, and split data.
 
-- `mk_variables()`: Gets the category name, number of attempts, and
-  metadata variables, if any exist.
-- `mk_attempts()`: Gets the attempt id, when the run began and ended,
-  and how long the run lasted (will be NA if run was not completed).
-- `mk_segments()`: Gets the segment/track id for the run, track name,
-  and your personal best time for that track.
-- `mk_segment_times()`: Gets the split time for the track. All times are
-  given in seconds.
+Note: All split/run times are given in seconds. If runs are not
+completed, the attempt time will be NA. If you reset on the first track,
+there will be more NA variables.
 
-If `mk_lss()` is not working for you, running the file though these
-functions can help identify the problem.
+To convert a folder of lss files into one table, use `mk_lss_folder()`.
+
+``` r
+folderpath <- "inst/extdata"
+
+all_runs <- mk_lss_folder(folderpath)
+
+all_runs[7:14, ]
+```
+
+    ##         category attempt_count individual_cup    cc    items   version
+    ## 7     Bonus Cups             2       Bell Cup 150cc No Items   Digital
+    ## 8     Bonus Cups             2       Bell Cup 150cc No Items   Digital
+    ## 9       DLC Cups             0  Boomerang Cup 150cc No Items   Digital
+    ## 10      DLC Cups             0  Boomerang Cup 150cc No Items   Digital
+    ## 11      DLC Cups             0  Boomerang Cup 150cc No Items   Digital
+    ## 12      DLC Cups             0  Boomerang Cup 150cc No Items   Digital
+    ## 13 Lightning Cup             5           <NA> 150cc     <NA> Cartridge
+    ## 14 Lightning Cup             5           <NA> 150cc     <NA> Cartridge
+    ##    attempt_id     attempt_started       attempt_ended attempt_time segment_id
+    ## 7           2 2023-03-26 21:35:48 2023-03-26 21:44:59     550.7740          3
+    ## 8           2 2023-03-26 21:35:48 2023-03-26 21:44:59     550.7740          4
+    ## 9          NA                <NA>                <NA>           NA          1
+    ## 10         NA                <NA>                <NA>           NA          2
+    ## 11         NA                <NA>                <NA>           NA          3
+    ## 12         NA                <NA>                <NA>           NA          4
+    ## 13          1 2022-05-28 04:37:50 2022-05-28 04:47:21     571.7477          1
+    ## 14          1 2022-05-28 04:37:50 2022-05-28 04:47:21     571.7477          2
+    ##    segment_time segment_name best_segment_time
+    ## 7      142.0570         dSBS          142.0570
+    ## 8      123.3540          dBB          119.7480
+    ## 9            NA          bBR                NA
+    ## 10           NA          bMC                NA
+    ## 11           NA          bWS                NA
+    ## 12           NA         bSSY                NA
+    ## 13     143.7547         rTTC          138.8561
+    ## 14     161.6055         rPPS          158.0864
+
+## `mk_repair`
+
+### Repair incorrectly entered data
+
+This is an experimental function to repair some columns that might have
+issues if your splits were entered incorrectly, or if you have old,
+outdated duplicate files in the same folder as more recent data.
+
+``` r
+repaired_runs <- mk_repair(all_runs)
+
+repaired_runs[29:32, ]
+```
+
+    ## # A tibble: 4 × 14
+    ##   category   attempt_count individual_cup cc    items version   attempt_id
+    ##   <chr>              <dbl> <chr>          <chr> <chr> <chr>          <dbl>
+    ## 1 Retro Cups             5 Lightning Cup  150cc <NA>  Cartridge          1
+    ## 2 Retro Cups             5 Lightning Cup  150cc <NA>  Cartridge          1
+    ## 3 Retro Cups             5 Lightning Cup  150cc <NA>  Cartridge          1
+    ## 4 Retro Cups             5 Lightning Cup  150cc <NA>  Cartridge          1
+    ## # ℹ 7 more variables: attempt_started <dttm>, attempt_ended <dttm>,
+    ## #   attempt_time <dbl>, segment_id <int>, segment_time <dbl>,
+    ## #   segment_name <chr>, best_segment_time <dbl>
+
+Current features:
+
+- Move/correct `individual_cup` names entered into the `category` field
+- Trim whitespace of characters
+- Round all attempt/split times to the hundredths place.
+- Fill in missing metadata variables (only for matching category/cup)
+- Update outdated split data for matching run categories/variables.
 
 ## `tracks` dataset
 
 The `tracks` dataset is a list of every track in MK8DX (as of wave 4).
 It can be used as a reference or to standardize/correct track names for
 use in tables or graphs. The dataset contains the track name, in both
-full (`track`) and abbreviated (`trk`) forms. The original system tag
-(`og_system`) is in a separate column to allow unique styling,
-i.e. “(DS) Peach Gardens”, “Peach Gardens DS”.
+full (`track`) and abbreviated (`trk`) forms. The original console tag
+(`console`) is in a separate column to allow unique styling, i.e. “(DS)
+Peach Gardens”, “Peach Gardens DS”.
 
 ``` r
 tracks[13:20, ]
@@ -149,42 +212,6 @@ For other categories, you can use the 16-track name (`trks16_name`) and
 position (`trks16_ID`); the 48-track position (`trks48_ID`); or the
 unique ID of the track, `trkID`, which also functions as the eventual
 96-track position.
-
-## Further Usage
-
-### Convert a folder of lss files to a table
-
-The `mk_lss_folder()` function will list all lss files in a folder. Then
-you can use `purrr::map()` to fetch split data for each file.
-
-``` r
-library(purrr)
-
-# get all lss files in a folder
-files <- mk_lss_folder("inst/extdata/")
-
-# get the lss data for each file and bind together
-all_runs <- map(files, mk_lss) |> list_rbind()
-
-glimpse(all_runs)
-```
-
-    ## Rows: 28
-    ## Columns: 14
-    ## $ category          <chr> "Bonus Cups", "Bonus Cups", "Bonus Cups", "Bonus Cup…
-    ## $ attempt_count     <dbl> 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1…
-    ## $ individual_cup    <chr> "Bell Cup", "Bell Cup", "Bell Cup", "Bell Cup", "Bel…
-    ## $ cc                <chr> "150cc", "150cc", "150cc", "150cc", "150cc", "150cc"…
-    ## $ items             <chr> "No Items", "No Items", "No Items", "No Items", "No …
-    ## $ version           <chr> "Digital", "Digital", "Digital", "Digital", "Digital…
-    ## $ attempt_id        <dbl> 1, 1, 1, 1, 2, 2, 2, 2, NA, NA, NA, NA, 1, 1, 1, 1, …
-    ## $ attempt_started   <dttm> 2023-03-26 21:25:31, 2023-03-26 21:25:31, 2023-03-2…
-    ## $ attempt_ended     <dttm> 2023-03-26 21:35:05, 2023-03-26 21:35:05, 2023-03-2…
-    ## $ attempt_time      <dbl> 573.779, 573.779, 573.779, 573.779, 550.774, 550.774…
-    ## $ segment_id        <int> 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 5, 6…
-    ## $ segment_time      <dbl> 153.480, 156.099, 144.452, 119.748, 141.554, 143.809…
-    ## $ segment_name      <chr> "dNBC", "dRiR", "dSBS", "dBB", "dNBC", "dRiR", "dSBS…
-    ## $ best_segment_time <dbl> 141.554, 143.809, 142.057, 119.748, 141.554, 143.809…
 
 ## Credits
 
