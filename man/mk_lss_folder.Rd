@@ -15,7 +15,3 @@ A vector of lss filepaths
 \description{
 Get all lss files in a folder
 }
-\examples{
-folder <- "extdata/"
-mk_lss_folder(folder)
-}

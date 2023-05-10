@@ -2,15 +2,19 @@
 #'
 #' @param folderpath A folder containing lss files
 #'
-#' @return A vector of lss filepaths
+#' @return A table of all lss data in the folder
 #' @export
 #'
-#' @examples
-#' folder <- "extdata/"
-#' mk_lss_folder(folder)
+#' @import purrr
 mk_lss_folder <- function(folderpath) {
 
   d <- folderpath
-  paste0(d, list.files(d, pattern = ".lss"))
+
+  if (!str_ends(d, "/")) {
+    d <- paste0(d, "/")
+  }
+
+  files <- paste0(d, list.files(d, pattern = ".lss"))
+  map(files, mk_lss) |> list_rbind()
 
 }
