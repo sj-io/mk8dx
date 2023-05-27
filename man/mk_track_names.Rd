@@ -18,7 +18,7 @@ mk_track_names(
 
 \item{tag_position}{Either "before" or "after" track name}
 
-\item{tag_surrounds}{Either "parenthesis", "brackets", or "NA"}
+\item{tag_surrounds}{Either "parenthesis", "brackets", or "none"}
 }
 \value{
 A dataframe with renamed track names

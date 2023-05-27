@@ -33,9 +33,10 @@ mk_lss <- function(filepath) {
                     ~ lubridate::mdy_hms(.x)),
              across(ends_with("_time"),
                     ~ lubridate::period_to_seconds(lubridate::hms(.x)))) %>%
-      suppressWarnings()
+      suppressWarnings() %>%
+      as_tibble()
   } else {
-    cbind(run_variables, run_segments)
+    cbind(run_variables, run_segments) %>% as_tibble()
   }
 
 }

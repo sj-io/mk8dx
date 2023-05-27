@@ -3,7 +3,7 @@
 #' @param df working df
 #' @param style The track name as "full", "abbr", or "both"
 #' @param tag_position Either "before" or "after" track name
-#' @param tag_surrounds Either "parenthesis", "brackets", or "NA"
+#' @param tag_surrounds Either "parenthesis", "brackets", or "none"
 #'
 #' @return A dataframe with renamed track names
 #' @export
