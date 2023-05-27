@@ -27,7 +27,7 @@ mk_repair <- function(df) {
 
     df <- df %>%
       filter(!str_detect(category, "Cup$")) %>%
-      rbind(good_cups)
+      bind_rows(good_cups)
 
   }
 

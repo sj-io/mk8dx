@@ -12,7 +12,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
 <!-- badges: end -->
 
-The mk8dx package converts lss files for MK8DX speedruns into usable table data.
+The mk8dx package converts lss files for MK8DX speedruns into usable table data. It also has tools to help clean up the data.
 
 ## Installation
 
@@ -72,11 +72,26 @@ repaired_runs[29:32, ]
 
 Current features:
 
-- Move/correct `individual_cup` names entered into the `category` field
-- Trim whitespace of characters
+- If `individual_cup` names are entered into the `category` field, move and correct these columns.
+- Trim whitespace of characters columns
 - Round all attempt/split times to the hundredths place.
 - Fill in missing metadata variables (only for matching category/cup)
 - Update outdated split data for matching run categories/variables.
+
+## `mk_track_names`
+### Rename track names to a uniform format
+
+The pack
+
+This function joins the split data with
+Joins with the `tracks` dataset by `category`, `individual_cup`, and `segment_id`.
+
+```{r}
+mk_track_names(repaired_runs, style = "full") %>% 
+  select(category, individual_cup, segment_id, contains("segment_name")) %>% 
+  distinct()
+```
+
 
 ## `tracks` dataset
 
@@ -85,37 +100,6 @@ The `tracks` dataset is a list of every track in MK8DX (as of wave 4). It can be
 ```{r tracks}
 tracks[13:20, ]
 ```
-
-### Join by track abbreviation
-
-If you use standard track abbreviations[^1] as your `segment_name`, you can join `segment_name` with `tracks$trk` to create new names.
-
-[^1]: Abbreviated names were copied from [the MK8DX Speedrunning discord](https://discord.com/channels/199214365860298752/199214365860298752/998310385545384138).
-
-```{r abbrJoin}
-bell_cup %>%
-  left_join(tracks, by = c("segment_name" = "trk")) %>%
-  mutate(new_segment_name = if_else(!is.na(console),
-                                paste0(track, " [", console, "]"),
-                                track)) %>%
-  select(attempt_id, segment_name, new_segment_name, segment_time)
-```
-
-### Join by position
-
-If your `segment_name` cannot easily be matched, you can also join by the track's position in the category. For instance, you can join by the `tracks$cup` and its corresponding position (`tracks$cup_ID`).
-
-```{r}
-bell_cup %>% 
-  left_join(tracks, by = c("individual_cup" = "cup",
-                           "segment_id" = "cup_ID")) %>% 
-  mutate(new_segment_name = if_else(!is.na(console),
-                                paste0(track, " [", console, "]"),
-                                track)) %>%
-  select(category, individual_cup, segment_id, segment_name, new_segment_name)
-```
-
-For other categories, you can use the 16-track name (`trks16_name`) and position (`trks16_ID`); the 48-track position (`trks48_ID`); or the unique ID of the track, `trkID`, which also functions as the eventual 96-track position.
 
 ## Credits
 
