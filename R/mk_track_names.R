@@ -30,6 +30,10 @@ mk_track_names <- function(df,
         .default = category
       )) %>%
     select(-c(trks16_name, cup, trk_ID))
+  tracks32 <- tracks_long %>%
+    filter(category == "48 Tracks" & segment_id < 33) %>%
+    mutate(category = "32 Tracks")
+  tracks_long <- tracks_long %>% bind_rows(tracks32)
 
   # tag surrounds
   if (tag_surrounds == "parenthesis") {
