@@ -29,76 +29,44 @@ Load the package to your library to use it.
 library(mk8dx)
 ```
 
-## `mk_lss`
+## `mk_lss()`: Create a table from lss data
 
-### Convert lss data to a table format
-
-Enter a filepath into `mk_lss()` to convert .lss data into a table.
+Provide a folder or file path to `mk_lss()` to create a table from lss data.
 
 ```{r mk_lss}
 library(dplyr)
 
-filepath <- "inst/extdata/bell-cup.lss"
-
-bell_cup <- mk_lss(filepath)
+bell_cup <- mk_lss("inst/extdata/bell-cup.lss")
 
 head(bell_cup, 4)
 ```
 
-The `mk_lss()` function reads the file as xml data using `xml2`. It then gets your file's metadata variables, attempts, and split data.
+The `mk_lss()` function reads the data using `xml2`. It gets the file's variables, attempts, and split data.
 
-Note: All split/run times are given in seconds. If runs are not completed, the attempt time will be NA. If you reset on the first track, there will be more NA variables.
+Note: All split/run times are given in seconds. If runs are not completed, the attempt time will be NA.
 
-To convert a folder of lss files into one table, use `mk_lss_folder()`.
+You can also provide a folder path to create one table from all lss files in the folder.
 
 ```{r}
-folderpath <- "inst/extdata"
+path <- "inst/extdata"
 
-all_runs <- mk_lss_folder(folderpath)
+all_runs <- mk_lss(path)
 
 all_runs[7:14, ]
 ```
 
-## `mk_repair`
-### Repair incorrectly entered data
-
-This is an experimental function to repair some columns that might have issues if your splits were entered incorrectly, or if you have old, outdated duplicate files in the same folder as more recent data.
-
-```{r}
-repaired_runs <- mk_repair(all_runs)
-
-repaired_runs[29:32, ]
-```
-
-Current features:
-
-- If `individual_cup` names are entered into the `category` field, move and correct these columns.
-- Trim whitespace of characters columns
-- Round all attempt/split times to the hundredths place.
-- Fill in missing metadata variables (only for matching category/cup)
-- Update outdated split data for matching run categories/variables.
-
-## `mk_track_names`
-### Rename track names to a uniform format
-
-The pack
-
-This function joins the split data with
-Joins with the `tracks` dataset by `category`, `individual_cup`, and `segment_id`.
-
-```{r}
-mk_track_names(repaired_runs, style = "full") %>% 
-  select(category, individual_cup, segment_id, contains("segment_name")) %>% 
-  distinct()
-```
-
-
 ## `tracks` dataset
 
-The `tracks` dataset is a list of every track in MK8DX (as of wave 4). It can be used as a reference or to standardize/correct track names for use in tables or graphs. The dataset contains the track name, in both full (`track`) and abbreviated (`trk`) forms. The original console tag (`console`) is in a separate column to allow unique styling, i.e. "(DS) Peach Gardens", "Peach Gardens DS".
+The `tracks` dataset contains every track in MK8DX (96 tracks). It can be used as a reference or to standardize/correct track names. 
+
+Included is:
+
+- the track name, both long (`track`) and abbreviated (`trk`)
+- the original console the track appeared (`console`)
+- some `id` columns to help sort/match tracks
 
 ```{r tracks}
-tracks[13:20, ]
+tracks[c(15:18, 79:82), ]
 ```
 
 ## Credits

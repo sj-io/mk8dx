@@ -1,16 +1,33 @@
 #' Convert lss data into a table
 #'
-#' @param filepath A path to an lss file.
+#' @param path A path to an lss file.
 #'
 #' @return A tibble of the data for the lss file.
 #' @export
 #'
-#' @import xml2
-#' @import dplyr
-#' @import tidyr
-#' @import lubridate
-mk_lss <- function(filepath) {
-  lss <- read_xml(filepath)
+#' @import xml2 dplyr tidyr lubridate stringr purrr
+mk_lss <- function(path) {
+
+  if (str_ends(path, ".lss")) {
+    mk_lss_file(path)
+
+  } else if (dir.exists(path)) {
+
+    if (!str_ends(path, "/")) {
+      path <- paste0(path, "/")
+    }
+
+    files <- paste0(path, list.files(path, pattern = ".lss"))
+    map(files, mk_lss_file) |> list_rbind()
+
+  } else {
+    stop("Not an .lss file or folder containing .lss files.")
+  }
+
+}
+
+mk_lss_file <- function(path) {
+  lss <- read_xml(path)
 
   # run variables
   run_variables <- mk_variables(lss)
@@ -38,7 +55,6 @@ mk_lss <- function(filepath) {
   } else {
     cbind(run_variables, run_segments) %>% as_tibble()
   }
-
 }
 
 #' Get run variables from lss data.
@@ -55,7 +71,7 @@ mk_variables <- function(lss) {
   if (length(variable_nodes) != 0) {
     tibble(
       category = xml_text(xml_child(lss, "CategoryName")),
-      attempt_count = as.numeric(xml_text(xml_child(lss, "AttemptCount"))),
+      total_attempts = as.numeric(xml_text(xml_child(lss, "AttemptCount"))),
       name = xml_attr(variable_nodes, "name"),
       value = xml_text(variable_nodes)
     ) %>%
@@ -63,7 +79,7 @@ mk_variables <- function(lss) {
   } else {
     tibble(
       category = xml_text(xml_child(lss, "CategoryName")),
-      attempt_count = as.numeric(xml_text(xml_child(lss, "AttemptCount")))
+      total_attempts = as.numeric(xml_text(xml_child(lss, "AttemptCount")))
     )
   }
 }
@@ -93,8 +109,6 @@ mk_attempts <- function(lss) {
 #' @param lss MK8DX XML data
 #'
 #' @return A tibble of tracks in the lss file.
-#'
-#' @import stringr
 mk_segments <- function(lss) {
   segment_names <- xml_find_all(lss, "//Segment/Name")
   best_segment_nodes_real <- xml_find_all(lss, "//Segment/BestSegmentTime/RealTime")

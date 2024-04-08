@@ -4,10 +4,10 @@
 \alias{mk_lss}
 \title{Convert lss data into a table}
 \usage{
-mk_lss(filepath)
+mk_lss(path)
 }
 \arguments{
-\item{filepath}{A path to an lss file.}
+\item{path}{A path to an lss file.}
 }
 \value{
 A tibble of the data for the lss file.
