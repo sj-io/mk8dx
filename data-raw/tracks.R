@@ -58,6 +58,4 @@ tracks <- tracks_raw %>%
                             trk_ID - 48,
                             trk_ID))
 
-save(tracks, file = "data/tracks.rda")
-
 usethis::use_data(tracks, overwrite = TRUE)

@@ -81,7 +81,8 @@ mk_attempts <- function(lss) {
     attempt_id = as.numeric(xml_attr(attempt_nodes, "id")),
     attempt_started = xml_attr(attempt_nodes, "started"),
     attempt_ended = xml_attr(attempt_nodes, "ended"),
-    attempt_time = xml_text(xml_child(attempt_nodes, "RealTime"))
+    attempt_real_time = xml_text(xml_child(attempt_nodes, "RealTime")),
+    attempt_game_time = xml_text(xml_child(attempt_nodes, "GameTime"))
   )
 
 }
@@ -96,7 +97,8 @@ mk_attempts <- function(lss) {
 #' @import stringr
 mk_segments <- function(lss) {
   segment_names <- xml_find_all(lss, "//Segment/Name")
-  best_segment_nodes <- xml_find_all(lss, "//Segment/BestSegmentTime/RealTime")
+  best_segment_nodes_real <- xml_find_all(lss, "//Segment/BestSegmentTime/RealTime")
+  best_segment_nodes_game <- xml_find_all(lss, "//Segment/BestSegmentTime/GameTime")
 
   segments <- tibble(
     segment_name = xml_text(segment_names),
@@ -105,18 +107,24 @@ mk_segments <- function(lss) {
   ) %>%
     select("segment_id", "segment_name")
 
-  if (length(best_segment_nodes) >= 1) {
-    segments <- segments %>%
-      mutate(best_segment_time = xml_text(best_segment_nodes))
-  }
-
   bad_segment_id <- count(segments, segment_id)
+  bad_segment_id <- bad_segment_id |> filter(n > 1)
 
   if (nrow(bad_segment_id) >= 1) {
-    segments %>% mutate(segment_id = row_number())
-  } else {
-    segments
+    segments <- segments %>% mutate(segment_id = row_number())
   }
+
+  if (length(best_segment_nodes_real) >= 1) {
+    segments <- segments %>%
+      mutate(best_segment_real_time = xml_text(best_segment_nodes_real))
+  }
+
+  if (length(best_segment_nodes_game) >= 1) {
+    segments <- segments %>%
+      mutate(best_segment_game_time = xml_text(best_segment_nodes_game))
+  }
+
+  segments
 
 }
 
@@ -127,21 +135,34 @@ mk_segments <- function(lss) {
 #' @return A tibble of track times.
 mk_segment_times <- function(lss) {
 
-  segment_time_nodes <- xml_find_all(lss, "//SegmentHistory/Time/RealTime")
+  segment_real_time_nodes <- xml_find_all(lss, "//SegmentHistory/Time/RealTime")
+  segment_game_time_nodes <- xml_find_all(lss, "//SegmentHistory/Time/GameTime")
 
-  segment_times <- tibble(
-    segment_time_path = xml_path(segment_time_nodes),
+  segment_real_times <- tibble(
+    segment_time_path = xml_path(segment_real_time_nodes),
     segment_id = as.numeric(str_extract(segment_time_path, "(?<=Segment.)\\d")),
-    attempt_id = as.numeric(xml_attr(xml_parent(segment_time_nodes), "id")),
-    segment_time = xml_text(segment_time_nodes)
-  ) %>% select("segment_id", "attempt_id", "segment_time")
+    attempt_id = as.numeric(xml_attr(xml_parent(segment_real_time_nodes), "id")),
+    segment_real_time = xml_text(segment_real_time_nodes)
+  ) %>% select("segment_id", "attempt_id", "segment_real_time")
 
-  bad_segment_id <- count(segment_times, segment_id)
+  bad_segment_id <- count(segment_real_times, segment_id)
+  bad_segment_id <- bad_segment_id |> filter(n > 1)
 
   if (nrow(bad_segment_id) >= 1) {
-    segment_times %>% mutate(segment_id = row_number(), .by = "attempt_id")
-  } else {
-    segment_times
+    segment_real_times <- segment_real_times %>% mutate(segment_id = row_number(), .by = "attempt_id")
   }
+
+  segment_game_times <- tibble(
+    segment_time_path = xml_path(segment_game_time_nodes),
+    segment_id = as.numeric(str_extract(segment_time_path, "(?<=Segment.)\\d")),
+    attempt_id = as.numeric(xml_attr(xml_parent(segment_game_time_nodes), "id")),
+    segment_game_time = xml_text(segment_game_time_nodes)
+  ) %>% select("segment_id", "attempt_id", "segment_game_time")
+
+  if (nrow(bad_segment_id) >= 1) {
+    segment_game_times <- segment_game_times %>% mutate(segment_id = row_number(), .by = "attempt_id")
+  }
+
+  segment_times <- segment_real_times |> left_join(segment_game_times, by = c("segment_id", "attempt_id"))
 
 }
